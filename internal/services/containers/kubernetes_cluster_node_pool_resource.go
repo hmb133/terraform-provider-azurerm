@@ -499,22 +499,25 @@ func resourceKubernetesClusterNodePoolCreate(d *pluginsdk.ResourceData, meta int
 	}
 
 	count := d.Get("node_count").(int)
-	if features.FourPointOh() {
-		enableAutoScaling := d.Get("auto_scaling_enabled").(bool)
+	var enableAutoScaling bool
+	if !features.FourPointOh() {
+		enableAutoScaling = d.Get("enable_auto_scaling").(bool)
 	} else {
-		enableAutoScaling := d.Get("enable_auto_scaling").(bool)
+		enableAutoScaling = d.Get("auto_scaling_enabled").(bool)
 	}
 
-	if features.FourPointOh() {
-		hostEncryption := d.Get("host_encryption_enabled").(bool)
+	var hostEncryption bool
+	if !features.FourPointOh() {
+		hostEncryption = d.Get("enable_host_encryption").(bool)
 	} else {
-		hostEncryption := d.Get("enable_host_encryption").(bool)
+		hostEncryption = d.Get("host_encryption_enabled").(bool)
 	}
 
-	if features.FourPointOh() {
-		nodeIp := d.Get("node_public_ip_enabled").(bool)
+	var nodeIp bool
+	if !features.FourPointOh() {
+		nodeIp = d.Get("enable_node_public_ip").(bool)
 	} else {
-		nodeIp := d.Get("enable_node_public_ip").(bool)
+		nodeIp = d.Get("node_public_ip_enabled").(bool)
 	}
 
 	evictionPolicy := d.Get("eviction_policy").(string)
@@ -526,11 +529,11 @@ func resourceKubernetesClusterNodePoolCreate(d *pluginsdk.ResourceData, meta int
 
 	profile := agentpools.ManagedClusterAgentPoolProfileProperties{
 		OsType:                 pointer.To(agentpools.OSType(osType)),
-		EnableAutoScaling:      pointer.To(enableAutoScaling),
+		EnableAutoScaling:      utils.Bool(enableAutoScaling),
 		EnableFIPS:             pointer.To(d.Get("fips_enabled").(bool)),
-		EnableEncryptionAtHost: pointer.To(hostEncryption),
+		EnableEncryptionAtHost: utils.Bool(hostEncryption),
 		EnableUltraSSD:         pointer.To(d.Get("ultra_ssd_enabled").(bool)),
-		EnableNodePublicIP:     pointer.To(nodeIp),
+		EnableNodePublicIP:     utils.Bool(nodeIp),
 		KubeletDiskType:        pointer.To(agentpools.KubeletDiskType(d.Get("kubelet_disk_type").(string))),
 		Mode:                   pointer.To(mode),
 		ScaleSetPriority:       pointer.To(agentpools.ScaleSetPriority(d.Get("priority").(string))),
